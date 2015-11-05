@@ -1,0 +1,33 @@
+/****** Object:  Table [dbo].[Grupo]    Script Date: 03/11/2015 22:31:31 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+SET ANSI_PADDING ON
+GO
+
+CREATE TABLE [dbo].[Grupo](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Descricao] [varchar](50) NOT NULL,
+	[IdAdm] [int] NOT NULL,
+ CONSTRAINT [PK_GrupoUsuario] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+SET ANSI_PADDING OFF
+GO
+
+ALTER TABLE [dbo].[Grupo]  WITH CHECK ADD  CONSTRAINT [FK_GrupoUsuario_Usuario] FOREIGN KEY([IdAdm])
+REFERENCES [dbo].[Usuario] ([Id])
+GO
+
+ALTER TABLE [dbo].[Grupo] CHECK CONSTRAINT [FK_GrupoUsuario_Usuario]
+GO
+
+

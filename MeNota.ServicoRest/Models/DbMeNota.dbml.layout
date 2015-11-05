@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 11, 8.5" name="DbMeNota">
+  <DataContextMoniker Name="/DbMeNotaDataContext" />
+  <nestedChildShapes>
+    <classShape Id="00a20cb7-36f9-40c4-a2ff-d7bdcf169c16" absoluteBounds="0.75, 2, 2, 1.3862939453124998">
+      <DataClassMoniker Name="/DbMeNotaDataContext/Usuario" />
+      <nestedChildShapes>
+        <elementListCompartment Id="a9170a36-eb5d-4836-a478-af7f8c56f088" absoluteBounds="0.765, 2.46, 1.9700000000000002, 0.8262939453125" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="178d40aa-17ee-413c-88ea-68527dfa2f77" absoluteBounds="6.25, 3, 2, 1.1939925130208335">
+      <DataClassMoniker Name="/DbMeNotaDataContext/GrupoUsuario" />
+      <nestedChildShapes>
+        <elementListCompartment Id="d71da954-9a79-406f-80ab-40ac2fdb16be" absoluteBounds="6.265, 3.46, 1.9700000000000002, 0.63399251302083326" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="0fc44b4e-97ed-40bf-92a0-dfddc8ba000b" absoluteBounds="3.5, 3.875, 2, 1.3862939453125005">
+      <DataClassMoniker Name="/DbMeNotaDataContext/Grupo" />
+      <nestedChildShapes>
+        <elementListCompartment Id="6db3672d-8e9f-482c-a65e-29df14a33f23" absoluteBounds="3.515, 4.335, 1.9700000000000002, 0.8262939453125" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <associationConnector edgePoints="[(2.75 : 3.19314697265625); (6.25 : 3.19314697265625)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/DbMeNotaDataContext/Usuario/Usuario_GrupoUsuario" />
+      <nodes>
+        <classShapeMoniker Id="00a20cb7-36f9-40c4-a2ff-d7bdcf169c16" />
+        <classShapeMoniker Id="178d40aa-17ee-413c-88ea-68527dfa2f77" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(5.5 : 4.03449625651042); (6.25 : 4.03449625651042)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/DbMeNotaDataContext/Grupo/Grupo_GrupoUsuario" />
+      <nodes>
+        <classShapeMoniker Id="0fc44b4e-97ed-40bf-92a0-dfddc8ba000b" />
+        <classShapeMoniker Id="178d40aa-17ee-413c-88ea-68527dfa2f77" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(2.75 : 2.56532098632812); (4.5 : 2.56532098632812); (4.5 : 3.875)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/DbMeNotaDataContext/Usuario/Usuario_Grupo" />
+      <nodes>
+        <classShapeMoniker Id="00a20cb7-36f9-40c4-a2ff-d7bdcf169c16" />
+        <classShapeMoniker Id="0fc44b4e-97ed-40bf-92a0-dfddc8ba000b" />
+      </nodes>
+    </associationConnector>
+  </nestedChildShapes>
+</ordesignerObjectsDiagram>
