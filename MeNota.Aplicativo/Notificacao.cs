@@ -32,7 +32,7 @@ namespace MeNota.Aplicativo
             }
             set
             {
-                _HttpChannel = HttpChannel;
+                _HttpChannel = value;
             }
         }        
     }
