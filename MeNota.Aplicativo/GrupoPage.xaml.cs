@@ -1,16 +1,16 @@
-﻿using System;
+﻿using Microsoft.Phone.Controls;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
-using Microsoft.Phone.Controls;
-using Microsoft.Phone.Shell;
-using Newtonsoft.Json;
-using System.Threading.Tasks;
-using System.Net.Http;
-using System.Text;
 
 namespace MeNota.Aplicativo
 {
@@ -58,7 +58,7 @@ namespace MeNota.Aplicativo
             var response = await httpClient.GetAsync("api/usuario?grupo=" + grupo.Id);
             var strJson = response.Content.ReadAsStringAsync().Result;
             membros = JsonConvert.DeserializeObject<List<Models.Usuario>>(strJson);
-            membros.Remove(membros.Single(m=>m.Id == usuario.Id));
+            membros.Remove(membros.Single(m => m.Id == usuario.Id));
             return membros;
         }
 
@@ -77,7 +77,7 @@ namespace MeNota.Aplicativo
                     lbxUsuarios.ItemsSource = await RecuperarMembros();
                     if (grupo.IdAdm == usuario.Id)
                     {
-                       lblAdministrador.Text = "@" + usuario.Nome;
+                        lblAdministrador.Text = "@" + usuario.Nome;
                         lbxConfigUsuarios.ItemsSource = lbxUsuarios.ItemsSource;
                     }
                     else
@@ -91,13 +91,19 @@ namespace MeNota.Aplicativo
                 {
                     NavigationService.Navigate(new Uri("/MainPage.xaml", UriKind.Relative));
                 }
-
-                base.OnNavigatedTo(e);
             }
             else
             {
                 NavigationService.Navigate(new Uri("/MainPage.xaml", UriKind.Relative));
             }
+
+            if (dic.ContainsKey("mensagem") && dic.ContainsKey("remetente"))
+            {
+                lblMensagem.Text = dic["mensagem"];
+                lblRemetente.Text = dic["remetente"];
+            }
+
+            base.OnNavigatedTo(e);
         }
 
         private async void btnBuscar_Click(object sender, RoutedEventArgs e)
@@ -175,7 +181,7 @@ namespace MeNota.Aplicativo
 
                 var content = new StringContent(json, Encoding.UTF8, "application/x-www-form-urlencoded");
 
-                await httpClient.PutAsync("api/grupo/"+grupo.Id, content);
+                await httpClient.PutAsync("api/grupo/" + grupo.Id, content);
 
                 pnrPrincipal.Title = grupo.Descricao;
                 txtDescricao.Text = grupo.Descricao;
@@ -198,7 +204,82 @@ namespace MeNota.Aplicativo
             var lbx = (ListBox)sender;
             var usuarioAlvo = (Models.Usuario)lbx.SelectedItem;
 
-            NavigationService.Navigate(new Uri("/UsuarioPage.xaml?usuario="+usuarioAlvo.Id, UriKind.Relative));
+            NavigationService.Navigate(new Uri("/UsuarioPage.xaml?usuario=" + usuarioAlvo.Id, UriKind.Relative));
+        }
+
+        private async void btnEnviar_Click(object sender, RoutedEventArgs e)
+        {
+            var mensagem = txtMensagem.Text;
+            if (String.IsNullOrWhiteSpace(mensagem))
+            {
+                MessageBox.Show("Digite uma mensagem...");
+            }
+            else
+            {
+                var contadorEnviada = 0;
+                foreach (var usuarioAlvo in membros)
+                {
+                    try
+                    {
+                        string xmlMensagem =
+                        "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+                        "<wp:Notification xmlns:wp=\"WPNotification\">" +
+                            "<wp:Toast>" +
+                                "<wp:Mensagem>" + mensagem + "</wp:Text1>" +
+                                "<wp:Remetente>" + usuario.Nome + "</wp:Text2>" +
+                                "<wp:Param>/GrupoPage.xaml?grupo=" + grupo.Id + "&remetente=" + usuario.Nome + "&mensagem="
+                                    + mensagem + "</wp:Param>" +
+                            "</wp:Toast>" +
+                        "</wp:Notification>";
+
+                        byte[] msgBytes = Encoding.UTF8.GetBytes(xmlMensagem);
+
+                        string uri = usuarioAlvo.Url;
+                        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
+                        request.Method = "POST";
+                        request.ContentType = "text/xml";
+                        request.ContentLength = xmlMensagem.Length;
+                        //request.Headers["X-MessageID"] = Guid.NewGuid().ToString();
+                        request.Headers["X-WindowsPhone-Target"] = "toast";
+                        request.Headers["X-NotificationClass"] = "2";
+
+                        // Envia a requisição
+                        using (Stream requestStream = await request.GetRequestStreamAsync())
+                        {
+                            requestStream.Write(msgBytes, 0, msgBytes.Length);
+                        }
+
+                        HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
+                        string notificationStatus = response.Headers["X-NotificationStatus"];
+                        string notificationChannelStatus = response.Headers["X-SubscriptionStatus"];
+                        string deviceConnectionStatus = response.Headers["X-DeviceConnectionStatus"];
+
+                        if (notificationStatus == "Received" && notificationChannelStatus == "Connected" && deviceConnectionStatus == "Active")
+                        {
+                            contadorEnviada++;
+                        }
+                    }
+                    catch
+                    {
+                        MessageBox.Show("Ocorreu um erro.");
+                    }
+                }
+
+                if (contadorEnviada == membros.Count)
+                {
+                    MessageBox.Show("Mensagem enviada à todos.");
+                }
+                else if (contadorEnviada > 0)
+                {
+                    MessageBox.Show("Mensagem enviada com algumas falhas.");
+                }
+                else
+                {
+                    MessageBox.Show("Todos estão desconectados.");
+                }
+
+                txtMensagem.Text = string.Empty;
+            }
         }
     }
 }

@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Navigation;
-using Microsoft.Phone.Controls;
-using Microsoft.Phone.Shell;
-using MeNota.Aplicativo.Resources;
-using Newtonsoft.Json;
+﻿using Microsoft.Phone.Controls;
 using Microsoft.Phone.Notification;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
+using System.Windows;
+using System.Windows.Navigation;
 
 namespace MeNota.Aplicativo
 {
@@ -21,8 +16,6 @@ namespace MeNota.Aplicativo
         public MainPage()
         {
             InitializeComponent();
-            // Sample code to localize the ApplicationBar
-            //BuildLocalizedApplicationBar();
         }
 
         private void btnConfig_Click(object sender, RoutedEventArgs e)
@@ -36,7 +29,7 @@ namespace MeNota.Aplicativo
             if (!String.IsNullOrWhiteSpace(nome))
             {
                 var httpClient = Servico.Instanciar();
-                var response = await httpClient.GetAsync("api/usuario?nome="+nome);
+                var response = await httpClient.GetAsync("api/usuario?nome=" + nome);
                 var strJson = response.Content.ReadAsStringAsync().Result;
                 List<Models.Usuario> lstUsuario = JsonConvert.DeserializeObject<List<Models.Usuario>>(strJson);
                 if (lstUsuario.Count == 1 && lstUsuario[0].Nome == nome)
@@ -55,14 +48,16 @@ namespace MeNota.Aplicativo
 
         public void CanalEntrar()
         {
+            HttpNotificationChannel httpChannel = new Notificacao().HttpChannel;
+
             // Delegates para atualização, erro e recebimento de mensagem
-            Notificacao.HttpChannel.ChannelUriUpdated += new EventHandler<NotificationChannelUriEventArgs>(httpChannel_ChannelUriUpdated);
-            Notificacao.HttpChannel.ErrorOccurred += new EventHandler<NotificationChannelErrorEventArgs>(httpChannel_ErrorOccurred);
-            Notificacao.HttpChannel.ShellToastNotificationReceived += new EventHandler<NotificationEventArgs>(httpChannel_ShellToastNotificationReceived);
+            httpChannel.ChannelUriUpdated += new EventHandler<NotificationChannelUriEventArgs>(httpChannel_ChannelUriUpdated);
+            httpChannel.ErrorOccurred += new EventHandler<NotificationChannelErrorEventArgs>(httpChannel_ErrorOccurred);
+            httpChannel.ShellToastNotificationReceived += new EventHandler<NotificationEventArgs>(httpChannel_ShellToastNotificationReceived);
 
             // Abre o canal e efetiva a ligação dos recebimentos
-            Notificacao.HttpChannel.Open();
-            Notificacao.HttpChannel.BindToShellToast();
+            httpChannel.Open();
+            httpChannel.BindToShellToast();
         }
 
         private async void AtualizarUsuario(Models.Usuario usuario)
@@ -89,31 +84,32 @@ namespace MeNota.Aplicativo
         private void httpChannel_ErrorOccurred(object sender, NotificationChannelErrorEventArgs e)
         {
             // Mostra dados do erro
-            Dispatcher.BeginInvoke(() => MessageBox.Show("Um erro com o sistema de Notificação ocorreu.", "Reinicie o aplicativo", MessageBoxButton.OK));            
+            Dispatcher.BeginInvoke(() =>
+                MessageBox.Show("Um erro com o sistema de Notificação ocorreu.", "Reinicie o aplicativo", MessageBoxButton.OK)
+            );
         }
 
         private void httpChannel_ShellToastNotificationReceived(object sender, NotificationEventArgs e)
         {
+            string remetente = string.Empty;
+            string mensagem = string.Empty;
             string relativeUri = string.Empty;
 
-            // Parse out the information that was part of the message.
-            foreach (string key in e.Collection.Keys)
+            if (e.Collection.ContainsKey("wp:Param") && e.Collection.ContainsKey("wp:Remetente") && e.Collection.ContainsKey("wp:Mensagem"))
             {
-                if (string.Compare(key, "wp:Param",
-                    System.Globalization.CultureInfo.InvariantCulture,
-                    System.Globalization.CompareOptions.IgnoreCase) == 0)
-                {
-                    relativeUri = e.Collection[key];
-                }
-            }
+                relativeUri = e.Collection["wp:Param"];
+                remetente = e.Collection["wp:Remetente"];
+                mensagem = e.Collection["wp:Mensagem"];
 
-            // Display a dialog of all the fields in the toast.
-            Dispatcher.BeginInvoke(() =>
-            {
-                //MessageBox.Show(message.ToString());
-                //listMsg.Items.Add(e.Collection["wp:Text1"] + ": " + e.Collection["wp:Text2"]);
-                NavigationService.Navigate(new Uri(relativeUri, UriKind.Relative));
-            });
+                // Display a dialog of all the fields in the toast.
+                Dispatcher.BeginInvoke(() =>
+                {
+                    if (MessageBox.Show(String.Format("@{0} diz: {1}", remetente, mensagem), "Nova mensagem", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+                    {
+                        NavigationService.Navigate(new Uri(relativeUri, UriKind.Relative));
+                    }
+                });
+            }
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -127,21 +123,5 @@ namespace MeNota.Aplicativo
                 base.OnNavigatedTo(e);
             }
         }
-
-        // Sample code for building a localized ApplicationBar
-        //private void BuildLocalizedApplicationBar()
-        //{
-        //    // Set the page's ApplicationBar to a new instance of ApplicationBar.
-        //    ApplicationBar = new ApplicationBar();
-
-        //    // Create a new button and set the text value to the localized string from AppResources.
-        //    ApplicationBarIconButton appBarButton = new ApplicationBarIconButton(new Uri("/Assets/AppBar/appbar.add.rest.png", UriKind.Relative));
-        //    appBarButton.Text = AppResources.AppBarButtonText;
-        //    ApplicationBar.Buttons.Add(appBarButton);
-
-        //    // Create a new menu item with the localized string from AppResources.
-        //    ApplicationBarMenuItem appBarMenuItem = new ApplicationBarMenuItem(AppResources.AppBarMenuItemText);
-        //    ApplicationBar.MenuItems.Add(appBarMenuItem);
-        //}
     }
 }

@@ -31,7 +31,8 @@ namespace MeNota.ServicoRest.Controllers
                 {
                     r = r.Where(g => g.IdAdm == admin);
                 }
-                else if (usuario.HasValue) {
+                else if (usuario.HasValue)
+                {
                     r = r.Where(g => g.GrupoUsuarios.SingleOrDefault(gu => gu.IdUsuario == usuario) != null);
                 }
 

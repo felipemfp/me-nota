@@ -45,16 +45,16 @@
         <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,0">
             <phone:Panorama>
                 <phone:PanoramaItem Header="mensagem">
-                    <TextBlock Name="lblMensagem"></TextBlock>
+                    <TextBlock Name="lblMensagem" TextWrapping="Wrap"></TextBlock>
                 </phone:PanoramaItem>
-                
+
                 <phone:PanoramaItem Header="enviar">
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="auto"></RowDefinition>
+                            <RowDefinition Height="*"></RowDefinition>
                             <RowDefinition Height="auto"></RowDefinition>
                         </Grid.RowDefinitions>
-                        <TextBox Name="txtMensagem" Grid.Row="0"></TextBox>
+                        <TextBox Name="txtMensagem" TextWrapping="Wrap" Grid.Row="0"></TextBox>
                         <Button Name="btnEnviar" Content="Enviar" Grid.Row="1" Click="btnEnviar_Click"></Button>
                     </Grid>
                 </phone:PanoramaItem>

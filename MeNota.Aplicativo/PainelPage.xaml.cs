@@ -1,15 +1,13 @@
-﻿using System;
+﻿using Microsoft.Phone.Controls;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
-using Microsoft.Phone.Controls;
-using Microsoft.Phone.Shell;
-using Newtonsoft.Json;
-using System.Net.Http;
-using System.Text;
 
 namespace MeNota.Aplicativo
 {
@@ -20,7 +18,7 @@ namespace MeNota.Aplicativo
         public PainelPage()
         {
             InitializeComponent();
-            txtUsuario.Text = "@" + usuario.Nome;
+            lblUsuario.Text = "@" + usuario.Nome;
             ListarGrupos();
             ListarUsuarios();
         }
@@ -33,20 +31,20 @@ namespace MeNota.Aplicativo
             List<Models.Usuario> lst = JsonConvert.DeserializeObject<List<Models.Usuario>>(strJson);
 
             lst.Remove(lst.Single(u => u.Id == usuario.Id));
-                
+
             lbxUsuarios.ItemsSource = lst;
         }
 
         public async void ListarGrupos()
         {
             var httpClient = Servico.Instanciar();
-            var response = await httpClient.GetAsync("api/grupo?usuario="+usuario.Id);
+            var response = await httpClient.GetAsync("api/grupo?usuario=" + usuario.Id);
             var strJson = response.Content.ReadAsStringAsync().Result;
             List<Models.Grupo> lstGrupo = JsonConvert.DeserializeObject<List<Models.Grupo>>(strJson);
 
             var responseAdmin = await httpClient.GetAsync("api/grupo?admin=" + usuario.Id);
             var strJsonAdmin = responseAdmin.Content.ReadAsStringAsync().Result;
-            List<Models.Grupo> lstGrupoAdmin = JsonConvert.DeserializeObject<List<Models.Grupo>>(strJsonAdmin);            
+            List<Models.Grupo> lstGrupoAdmin = JsonConvert.DeserializeObject<List<Models.Grupo>>(strJsonAdmin);
 
             lbxGrupos.ItemsSource = lstGrupo;
             lbxMeusGrupos.ItemsSource = lstGrupoAdmin;
@@ -67,7 +65,7 @@ namespace MeNota.Aplicativo
 
                 List<Models.Grupo> lst = new List<Models.Grupo>();
 
-                lst.Add(g);                
+                lst.Add(g);
 
                 string json = "=" + JsonConvert.SerializeObject(lst);
 
@@ -84,7 +82,7 @@ namespace MeNota.Aplicativo
         private void lbx_DoubleTap(object sender, System.Windows.Input.GestureEventArgs e)
         {
             var lbx = (ListBox)sender;
-            NavigationService.Navigate(new Uri("/GrupoPage.xaml?grupo="+(lbx.SelectedItem as Models.Grupo).Id, UriKind.Relative));
+            NavigationService.Navigate(new Uri("/GrupoPage.xaml?grupo=" + (lbx.SelectedItem as Models.Grupo).Id, UriKind.Relative));
         }
 
         private void btnPerfil_Click(object sender, RoutedEventArgs e)
@@ -95,7 +93,7 @@ namespace MeNota.Aplicativo
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             usuario = (Application.Current as App).Usuario;
-            txtUsuario.Text = "@" + usuario.Nome;
+            lblUsuario.Text = "@" + usuario.Nome;
             base.OnNavigatedTo(e);
         }
 

@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Navigation;
-using Microsoft.Phone.Controls;
-using Microsoft.Phone.Shell;
+﻿using Microsoft.Phone.Controls;
 using Newtonsoft.Json;
-using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
+using System.Windows;
 
 namespace MeNota.Aplicativo
 {
@@ -39,7 +33,8 @@ namespace MeNota.Aplicativo
             {
                 var httpClient = Servico.Instanciar();
 
-                Models.Usuario u = new Models.Usuario {
+                Models.Usuario u = new Models.Usuario
+                {
                     Nome = nome
                 };
 

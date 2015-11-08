@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Navigation;
-using Microsoft.Phone.Controls;
-using Microsoft.Phone.Shell;
-using System.Net.Http;
+﻿using Microsoft.Phone.Controls;
 using Newtonsoft.Json;
+using System;
+using System.Net.Http;
 using System.Text;
+using System.Windows;
+using System.Windows.Navigation;
 
 namespace MeNota.Aplicativo
 {
@@ -21,7 +16,7 @@ namespace MeNota.Aplicativo
         {
             InitializeComponent();
             txtNomeUsuario.Text = usuario.Nome;
-            txtUsuario.Text = "@" + usuario.Nome;
+            lblUsuario.Text = "@" + usuario.Nome;
         }
 
         private async void btnSalvar_Click(object sender, RoutedEventArgs e)
@@ -36,11 +31,11 @@ namespace MeNota.Aplicativo
                 string json = "=" + JsonConvert.SerializeObject(usuario);
 
                 var content = new StringContent(json, Encoding.UTF8, "application/x-www-form-urlencoded");
-                
+
                 await httpClient.PutAsync("api/usuario/" + usuario.Id, content);
 
                 (Application.Current as App).Usuario = usuario;
-                txtUsuario.Text ="@"+ usuario.Nome;
+                lblUsuario.Text = "@" + usuario.Nome;
             }
         }
 

@@ -37,7 +37,7 @@ namespace MeNota.ServicoRest.Controllers
             using (var c = new Models.DbMeNotaDataContext())
             {
                 c.GrupoUsuarios.InsertAllOnSubmit(lst);
-                c.SubmitChanges();                
+                c.SubmitChanges();
             }
         }
 

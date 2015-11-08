@@ -28,11 +28,11 @@
             </TextBlock>
         </DataTemplate>
     </phone:PhoneApplicationPage.Resources>
-    
+
 
     <!--LayoutRoot is the root grid where all page content is placed-->
-    <Grid x:Name="LayoutRoot" Background="Transparent">        
-        
+    <Grid x:Name="LayoutRoot" Background="Transparent">
+
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -50,7 +50,7 @@
                     <ColumnDefinition Width="*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="ME NOTA" Style="{StaticResource PhoneTextNormalStyle}" Grid.Row="0" Grid.Column="0"/>
-                <TextBlock Name="txtUsuario" HorizontalAlignment="Right" Margin="0,-7,21,0" Text="@usuario" Grid.Row="0" Grid.Column="1">
+                <TextBlock Name="lblUsuario" HorizontalAlignment="Right" Margin="0,-7,21,0" Text="@usuario" Grid.Row="0" Grid.Column="1">
                     <TextBlock.Foreground>
                         <SolidColorBrush Color="{StaticResource PhoneInverseInactiveColor}"/>
                     </TextBlock.Foreground>
@@ -85,7 +85,7 @@
                         </ListBox>
                     </Grid>
                     <!-- Caixa de pesquisa -->
-                                     
+
                 </phone:PanoramaItem>
                 <phone:PanoramaItem Header="meus grupos">
                     <ListBox Name="lbxMeusGrupos" ItemTemplate="{StaticResource grupoTemplate}" DoubleTap="lbx_DoubleTap">

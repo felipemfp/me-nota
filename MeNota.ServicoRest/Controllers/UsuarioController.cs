@@ -28,7 +28,7 @@ namespace MeNota.ServicoRest.Controllers
                 }
                 else if (grupo.HasValue)
                 {
-                    r = r.Where(u=>u.GrupoUsuarios.SingleOrDefault(g=>g.IdGrupo == grupo) != null);
+                    r = r.Where(u => u.GrupoUsuarios.SingleOrDefault(g => g.IdGrupo == grupo) != null);
                 }
 
                 return r.ToList();
@@ -52,13 +52,13 @@ namespace MeNota.ServicoRest.Controllers
             Models.Usuario x = JsonConvert.DeserializeObject<Models.Usuario>(value);
             using (var c = new Models.DbMeNotaDataContext())
             {
-                Models.Usuario usr = c.Usuarios.SingleOrDefault(u=>u.Id == id);
+                Models.Usuario usr = c.Usuarios.SingleOrDefault(u => u.Id == id);
                 if (usr != null)
                 {
                     usr.Nome = x.Nome;
                     usr.Url = x.Url;
                     c.SubmitChanges();
-                }                
+                }
             }
         }
 

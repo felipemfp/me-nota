@@ -3,13 +3,10 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Navigation;
 
 namespace MeNota.Aplicativo
@@ -23,7 +20,7 @@ namespace MeNota.Aplicativo
         {
             InitializeComponent();
             lblUsuario.Text = "@" + usuario.Nome;
-        }        
+        }
 
         private async Task<bool> RecuperarUsuarioAlvo(int id)
         {
@@ -76,35 +73,55 @@ namespace MeNota.Aplicativo
             }
             else
             {
-                string xmlMensagem =
-                "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-                "<wp:Notification xmlns:wp=\"WPNotification\">" +
-                    "<wp:Toast>" +
-                        "<wp:Mensagem>" + mensagem + "</wp:Text1>" +
-                        "<wp:UsuarioEnviou>" + usuario.Nome + "</wp:Text2>" +
-                        "<wp:Param>/UsuarioPage.xaml?usuario=" + usuarioAlvo.Id + "&mensagem="
-                            + mensagem + "</wp:Param>" +
-                    "</wp:Toast>" +
-                "</wp:Notification>";
-
-                byte[] msgBytes = Encoding.UTF8.GetBytes(xmlMensagem);
-
-                string uri = usuarioAlvo.Url;
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
-                request.Method = "Post";
-                request.ContentType = "text/xml";
-                request.ContentLength = xmlMensagem.Length;
-                request.Headers["X-MessageID"] = Guid.NewGuid().ToString();
-                request.Headers["X-WindowsPhone-Target"] = "toast";
-                request.Headers["X-NotificationClass"] = "2";
-
-                // Envia a requisição
-                using (Stream requestStream = await request.GetRequestStreamAsync())
+                try
                 {
-                    requestStream.Write(msgBytes, 0, msgBytes.Length);
-                }
+                    string xmlMensagem =
+                    "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+                    "<wp:Notification xmlns:wp=\"WPNotification\">" +
+                        "<wp:Toast>" +
+                            "<wp:Mensagem>" + mensagem + "</wp:Text1>" +
+                            "<wp:Remetente>" + usuario.Nome + "</wp:Text2>" +
+                            "<wp:Param>/UsuarioPage.xaml?usuario=" + usuarioAlvo.Id + "&mensagem="
+                                + mensagem + "</wp:Param>" +
+                        "</wp:Toast>" +
+                    "</wp:Notification>";
 
-                txtMensagem.Text = String.Empty;
+                    byte[] msgBytes = Encoding.UTF8.GetBytes(xmlMensagem);
+
+                    string uri = usuarioAlvo.Url;
+                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
+                    request.Method = "POST";
+                    request.ContentType = "text/xml";
+                    request.ContentLength = xmlMensagem.Length;
+                    //request.Headers["X-MessageID"] = Guid.NewGuid().ToString();
+                    request.Headers["X-WindowsPhone-Target"] = "toast";
+                    request.Headers["X-NotificationClass"] = "2";
+
+                    // Envia a requisição
+                    using (Stream requestStream = await request.GetRequestStreamAsync())
+                    {
+                        requestStream.Write(msgBytes, 0, msgBytes.Length);
+                    }
+
+                    HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
+                    string notificationStatus = response.Headers["X-NotificationStatus"];
+                    string notificationChannelStatus = response.Headers["X-SubscriptionStatus"];
+                    string deviceConnectionStatus = response.Headers["X-DeviceConnectionStatus"];
+
+                    if (notificationStatus == "Received" && notificationChannelStatus == "Connected" && deviceConnectionStatus == "Active")
+                    {
+                        MessageBox.Show("Mensagem enviada.");
+                        txtMensagem.Text = String.Empty;
+                    }
+                    else
+                    {
+                        MessageBox.Show(String.Format("@{0} está desconectado.", usuarioAlvo.Nome));
+                    }
+                }
+                catch
+                {
+                    MessageBox.Show("Ocorreu um erro.");
+                }
             }
         }
     }

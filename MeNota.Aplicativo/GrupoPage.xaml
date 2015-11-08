@@ -22,14 +22,29 @@
             </TextBlock>
         </DataTemplate>
     </phone:PhoneApplicationPage.Resources>
-    
+
     <!--LayoutRoot contains the root grid where all other page content is placed-->
     <Grid x:Name="LayoutRoot">
         <phone:Panorama Name="pnrPrincipal" Title="Descrição">
 
             <phone:PanoramaItem Header="mensagem">
-            </phone:PanoramaItem>            
-            
+                <StackPanel>
+                    <TextBlock Name="lblRemetente"></TextBlock>
+                    <TextBlock Name="lblMensagem" TextWrapping="Wrap"></TextBlock>
+                </StackPanel>
+            </phone:PanoramaItem>
+
+            <phone:PanoramaItem Header="enviar">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="auto"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Name="txtMensagem" TextWrapping="Wrap" Grid.Row="0"></TextBox>
+                    <Button Name="btnEnviar" Content="Enviar" Grid.Row="1" Click="btnEnviar_Click"></Button>
+                </Grid>
+            </phone:PanoramaItem>
+
             <phone:PanoramaItem Header="usuários">
                 <ListBox Name="lbxUsuarios" ItemTemplate="{StaticResource usuarioTemplate}" DoubleTap="lbxUsuarios_DoubleTap">
                 </ListBox>
@@ -75,7 +90,7 @@
                     <Button Name="btnApagar" Content="Apagar grupo" Grid.Row="4" Click="btnApagar_Click"></Button>
                 </Grid>
             </phone:PanoramaItem>
-            
+
             <phone:PanoramaItem Name="pnrItemConfigMembros" Header="membros">
                 <Grid>
                     <Grid.RowDefinitions>
