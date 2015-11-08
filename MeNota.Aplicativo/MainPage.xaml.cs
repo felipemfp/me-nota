@@ -11,11 +11,11 @@ using System.Windows.Navigation;
 namespace MeNota.Aplicativo
 {
     public partial class MainPage : PhoneApplicationPage
-    {
+    {       
         // Constructor
         public MainPage()
         {
-            InitializeComponent();
+            InitializeComponent();            
         }
 
         private void btnConfig_Click(object sender, RoutedEventArgs e)
@@ -36,7 +36,39 @@ namespace MeNota.Aplicativo
                 {
                     txtNomeUsuario.Text = String.Empty;
                     (Application.Current as App).Usuario = lstUsuario[0];
-                    CanalEntrar();
+
+                    HttpNotificationChannel pushChannel;
+
+                    string channelName = "MeNotaChannel";
+
+                    InitializeComponent();
+
+                    pushChannel = HttpNotificationChannel.Find(channelName);
+
+                    if (pushChannel == null)
+                    {
+                        pushChannel = new HttpNotificationChannel(channelName);
+
+                        pushChannel.ChannelUriUpdated += new EventHandler<NotificationChannelUriEventArgs>(PushChannel_ChannelUriUpdated);
+                        pushChannel.ErrorOccurred += new EventHandler<NotificationChannelErrorEventArgs>(PushChannel_ErrorOccurred);
+
+                        pushChannel.ShellToastNotificationReceived += new EventHandler<NotificationEventArgs>(PushChannel_ShellToastNotificationReceived);
+
+                        pushChannel.Open();
+
+                        pushChannel.BindToShellToast();
+                    }
+                    else
+                    {
+                        pushChannel.ChannelUriUpdated += new EventHandler<NotificationChannelUriEventArgs>(PushChannel_ChannelUriUpdated);
+                        pushChannel.ErrorOccurred += new EventHandler<NotificationChannelErrorEventArgs>(PushChannel_ErrorOccurred);
+
+                        pushChannel.ShellToastNotificationReceived += new EventHandler<NotificationEventArgs>(PushChannel_ShellToastNotificationReceived);
+                        
+                        (Application.Current as App).Usuario.Url = pushChannel.ChannelUri.ToString();
+                        AtualizarUsuario((Application.Current as App).Usuario);
+                    }
+
                     NavigationService.Navigate(new Uri("/PainelPage.xaml", UriKind.Relative));
                 }
                 else
@@ -46,70 +78,55 @@ namespace MeNota.Aplicativo
             }
         }
 
-        public void CanalEntrar()
-        {
-            HttpNotificationChannel httpChannel = new Notificacao().HttpChannel;
-
-            // Delegates para atualização, erro e recebimento de mensagem
-            httpChannel.ChannelUriUpdated += new EventHandler<NotificationChannelUriEventArgs>(httpChannel_ChannelUriUpdated);
-            httpChannel.ErrorOccurred += new EventHandler<NotificationChannelErrorEventArgs>(httpChannel_ErrorOccurred);
-            httpChannel.ShellToastNotificationReceived += new EventHandler<NotificationEventArgs>(httpChannel_ShellToastNotificationReceived);
-
-            // Abre o canal e efetiva a ligação dos recebimentos
-            httpChannel.Open();
-            httpChannel.BindToShellToast();
-        }
-
         private async void AtualizarUsuario(Models.Usuario usuario)
         {
             var httpClient = Servico.Instanciar();
-
             string json = "=" + JsonConvert.SerializeObject(usuario);
-
             var content = new StringContent(json, Encoding.UTF8, "application/x-www-form-urlencoded");
-
             await httpClient.PutAsync("api/usuario/" + usuario.Id, content);
         }
 
-        private void httpChannel_ChannelUriUpdated(object sender, NotificationChannelUriEventArgs e)
+        private void PushChannel_ChannelUriUpdated(object sender, NotificationChannelUriEventArgs e)
         {
             Dispatcher.BeginInvoke(() =>
             {
-                // Mostra dados do canal
                 (Application.Current as App).Usuario.Url = e.ChannelUri.ToString();
                 AtualizarUsuario((Application.Current as App).Usuario);
             });
         }
 
-        private void httpChannel_ErrorOccurred(object sender, NotificationChannelErrorEventArgs e)
+        private void PushChannel_ErrorOccurred(object sender, NotificationChannelErrorEventArgs e)
         {
-            // Mostra dados do erro
             Dispatcher.BeginInvoke(() =>
                 MessageBox.Show("Um erro com o sistema de Notificação ocorreu.", "Reinicie o aplicativo", MessageBoxButton.OK)
             );
         }
 
-        private void httpChannel_ShellToastNotificationReceived(object sender, NotificationEventArgs e)
+        private void PushChannel_ShellToastNotificationReceived(object sender, NotificationEventArgs e)
         {
-            string remetente = string.Empty;
-            string mensagem = string.Empty;
-            string relativeUri = string.Empty;
+            string message = String.Empty;
+            string relativeUri = string.Empty;            
 
-            if (e.Collection.ContainsKey("wp:Param") && e.Collection.ContainsKey("wp:Remetente") && e.Collection.ContainsKey("wp:Mensagem"))
+            foreach (string key in e.Collection.Keys)
             {
-                relativeUri = e.Collection["wp:Param"];
-                remetente = e.Collection["wp:Remetente"];
-                mensagem = e.Collection["wp:Mensagem"];
-
-                // Display a dialog of all the fields in the toast.
-                Dispatcher.BeginInvoke(() =>
+                if (string.Compare(
+                    key,
+                    "wp:Param",
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.CompareOptions.IgnoreCase) == 0)
                 {
-                    if (MessageBox.Show(String.Format("@{0} diz: {1}", remetente, mensagem), "Nova mensagem", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
-                    {
-                        NavigationService.Navigate(new Uri(relativeUri, UriKind.Relative));
-                    }
-                });
+                    relativeUri = e.Collection[key];
+                }
             }
+
+            message = String.Format("{0} diz: {1}", e.Collection["Text1"], e.Collection["Text2"]);
+
+            Dispatcher.BeginInvoke(() => {
+                if (MessageBox.Show(message, "Nova mensagem", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+                {
+                    NavigationService.Navigate(new Uri(relativeUri, UriKind.Relative));
+                }
+            });
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)

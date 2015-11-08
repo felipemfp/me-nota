@@ -113,7 +113,6 @@
     <Compile Include="Models\Grupo.cs" />
     <Compile Include="Models\Usuario.cs" />
     <Compile Include="Models\GrupoUsuario.cs" />
-    <Compile Include="Notificacao.cs" />
     <Compile Include="PainelPage.xaml.cs">
       <DependentUpon>PainelPage.xaml</DependentUpon>
     </Compile>

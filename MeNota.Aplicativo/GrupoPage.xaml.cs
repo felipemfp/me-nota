@@ -225,8 +225,8 @@ namespace MeNota.Aplicativo
                         "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
                         "<wp:Notification xmlns:wp=\"WPNotification\">" +
                             "<wp:Toast>" +
-                                "<wp:Mensagem>" + mensagem + "</wp:Text1>" +
-                                "<wp:Remetente>" + usuario.Nome + "</wp:Text2>" +
+                                "<wp:Text1>" + $"{usuario.Nome}" + "</wp:Text1>" +
+                                "<wp:Text2>" + mensagem + "</wp:Text2>" +
                                 "<wp:Param>/GrupoPage.xaml?grupo=" + grupo.Id + "&remetente=" + usuario.Nome + "&mensagem="
                                     + mensagem + "</wp:Param>" +
                             "</wp:Toast>" +
@@ -239,7 +239,7 @@ namespace MeNota.Aplicativo
                         request.Method = "POST";
                         request.ContentType = "text/xml";
                         request.ContentLength = xmlMensagem.Length;
-                        //request.Headers["X-MessageID"] = Guid.NewGuid().ToString();
+                        request.Headers["X-MessageID"] = Guid.NewGuid().ToString();
                         request.Headers["X-WindowsPhone-Target"] = "toast";
                         request.Headers["X-NotificationClass"] = "2";
 
@@ -254,7 +254,7 @@ namespace MeNota.Aplicativo
                         string notificationChannelStatus = response.Headers["X-SubscriptionStatus"];
                         string deviceConnectionStatus = response.Headers["X-DeviceConnectionStatus"];
 
-                        if (notificationStatus == "Received" && notificationChannelStatus == "Connected" && deviceConnectionStatus == "Active")
+                        if (notificationStatus == "Received" && notificationChannelStatus == "Active" && deviceConnectionStatus == "Connected")
                         {
                             contadorEnviada++;
                         }

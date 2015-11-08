@@ -12,11 +12,12 @@ using System.Windows.Navigation;
 namespace MeNota.Aplicativo
 {
     public partial class PainelPage : PhoneApplicationPage
-    {
+    {      
         private Models.Usuario usuario = (Application.Current as App).Usuario;
 
         public PainelPage()
         {
+            
             InitializeComponent();
             lblUsuario.Text = "@" + usuario.Nome;
             ListarGrupos();

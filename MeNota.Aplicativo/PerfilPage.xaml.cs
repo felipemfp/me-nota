@@ -10,10 +10,12 @@ namespace MeNota.Aplicativo
 {
     public partial class PerfilPage : PhoneApplicationPage
     {
+        
         private Models.Usuario usuario = (Application.Current as App).Usuario;
 
         public PerfilPage()
         {
+            
             InitializeComponent();
             txtNomeUsuario.Text = usuario.Nome;
             lblUsuario.Text = "@" + usuario.Nome;
