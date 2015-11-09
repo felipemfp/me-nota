@@ -1,4 +1,5 @@
 ﻿using Microsoft.Phone.Controls;
+using Microsoft.Phone.Notification;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -17,11 +18,83 @@ namespace MeNota.Aplicativo
 
         public PainelPage()
         {
-            
             InitializeComponent();
             lblUsuario.Text = "@" + usuario.Nome;
             ListarGrupos();
             ListarUsuarios();
+
+            // Iniciar canal
+            HttpNotificationChannel pushChannel;
+            string channelName = "MeNotaChannel";
+            pushChannel = HttpNotificationChannel.Find(channelName);
+            if (pushChannel == null)
+            {
+                pushChannel = new HttpNotificationChannel(channelName);
+                pushChannel.ChannelUriUpdated += new EventHandler<NotificationChannelUriEventArgs>(PushChannel_ChannelUriUpdated);
+                pushChannel.ErrorOccurred += new EventHandler<NotificationChannelErrorEventArgs>(PushChannel_ErrorOccurred);
+                pushChannel.ShellToastNotificationReceived += new EventHandler<NotificationEventArgs>(PushChannel_ShellToastNotificationReceived);
+                pushChannel.Open();
+                pushChannel.BindToShellToast();
+            }
+            else
+            {
+                pushChannel.ChannelUriUpdated += new EventHandler<NotificationChannelUriEventArgs>(PushChannel_ChannelUriUpdated);
+                pushChannel.ErrorOccurred += new EventHandler<NotificationChannelErrorEventArgs>(PushChannel_ErrorOccurred);
+                pushChannel.ShellToastNotificationReceived += new EventHandler<NotificationEventArgs>(PushChannel_ShellToastNotificationReceived);
+                (Application.Current as App).Usuario.Url = pushChannel.ChannelUri.ToString();
+                AtualizarUsuario((Application.Current as App).Usuario);
+            }
+        }
+
+        private async void AtualizarUsuario(Models.Usuario usuario)
+        {
+            var httpClient = Servico.Instanciar();
+            string json = "=" + JsonConvert.SerializeObject(usuario);
+            var content = new StringContent(json, Encoding.UTF8, "application/x-www-form-urlencoded");
+            await httpClient.PutAsync("api/usuario/" + usuario.Id, content);
+        }
+
+        private void PushChannel_ChannelUriUpdated(object sender, NotificationChannelUriEventArgs e)
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                (Application.Current as App).Usuario.Url = e.ChannelUri.ToString();
+                AtualizarUsuario((Application.Current as App).Usuario);
+            });
+        }
+
+        private void PushChannel_ErrorOccurred(object sender, NotificationChannelErrorEventArgs e)
+        {
+            Dispatcher.BeginInvoke(() =>
+                MessageBox.Show("Um erro com o sistema de Notificação ocorreu.", "Reinicie o aplicativo", MessageBoxButton.OK)
+            );
+        }
+
+        private void PushChannel_ShellToastNotificationReceived(object sender, NotificationEventArgs e)
+        {
+            string message = String.Empty;
+            string relativeUri = string.Empty;
+
+            foreach (string key in e.Collection.Keys)
+            {
+                if (string.Compare(
+                    key,
+                    "wp:Param",
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.CompareOptions.IgnoreCase) == 0)
+                {
+                    relativeUri = e.Collection[key];
+                }
+            }
+
+            message = $"{e.Collection["wp:Text1"]} diz: {e.Collection["wp:Text2"]}";
+
+            Dispatcher.BeginInvoke(() => {
+                if (MessageBox.Show(message, "Nova mensagem", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+                {
+                    NavigationService.Navigate(new Uri(relativeUri, UriKind.Relative));
+                }
+            });
         }
 
         public async void ListarUsuarios()

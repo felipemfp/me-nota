@@ -221,40 +221,11 @@ namespace MeNota.Aplicativo
                 {
                     try
                     {
-                        string xmlMensagem =
-                        "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-                        "<wp:Notification xmlns:wp=\"WPNotification\">" +
-                            "<wp:Toast>" +
-                                "<wp:Text1>" + $"{usuario.Nome}" + "</wp:Text1>" +
-                                "<wp:Text2>" + mensagem + "</wp:Text2>" +
-                                "<wp:Param>/GrupoPage.xaml?grupo=" + grupo.Id + "&remetente=" + usuario.Nome + "&mensagem="
-                                    + mensagem + "</wp:Param>" +
-                            "</wp:Toast>" +
-                        "</wp:Notification>";
-
-                        byte[] msgBytes = Encoding.UTF8.GetBytes(xmlMensagem);
-
-                        string uri = usuarioAlvo.Url;
-                        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
-                        request.Method = "POST";
-                        request.ContentType = "text/xml";
-                        request.ContentLength = xmlMensagem.Length;
-                        request.Headers["X-MessageID"] = Guid.NewGuid().ToString();
-                        request.Headers["X-WindowsPhone-Target"] = "toast";
-                        request.Headers["X-NotificationClass"] = "2";
-
-                        // Envia a requisição
-                        using (Stream requestStream = await request.GetRequestStreamAsync())
-                        {
-                            requestStream.Write(msgBytes, 0, msgBytes.Length);
-                        }
-
-                        HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
-                        string notificationStatus = response.Headers["X-NotificationStatus"];
-                        string notificationChannelStatus = response.Headers["X-SubscriptionStatus"];
-                        string deviceConnectionStatus = response.Headers["X-DeviceConnectionStatus"];
-
-                        if (notificationStatus == "Received" && notificationChannelStatus == "Active" && deviceConnectionStatus == "Connected")
+                        HttpClient httpClient = Servico.Instanciar();
+                        var response = await httpClient.GetAsync($"notificacao/enviar?remetente={usuario.Id}&destinatario={usuarioAlvo.Id}&mensagem={mensagem}&grupo={grupo.Id}");
+                        var strJson = response.Content.ReadAsStringAsync().Result;
+                        dynamic retorno = JsonConvert.DeserializeObject(strJson);
+                        if (retorno["Flag"] == true)
                         {
                             contadorEnviada++;
                         }
@@ -277,7 +248,6 @@ namespace MeNota.Aplicativo
                 {
                     MessageBox.Show("Todos estão desconectados.");
                 }
-
                 txtMensagem.Text = string.Empty;
             }
         }

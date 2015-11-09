@@ -19,7 +19,9 @@ namespace MeNota.ServicoRest.Controllers
         }
 
         // GET: Notificacao/Enviar?remetente=5&destinatario=1&mensagem=HelloWorld
-        public ActionResult Enviar(int remetente, int destinatario, string mensagem) {
+        public ActionResult Enviar(int remetente, int destinatario, string mensagem, int? grupo) {
+            object retorno;
+            
             Models.Usuario usuario;
             Models.Usuario usuarioAlvo;
 
@@ -31,20 +33,22 @@ namespace MeNota.ServicoRest.Controllers
             
             if (String.IsNullOrWhiteSpace(mensagem))
             {
-                Debug.WriteLine("[ME_NOTA] Mensagem vazia");
+                retorno = new { Mensagem = "Mensagem vazio.", Flag = false };
             }
             else
             {
                 try
                 {
+                    string param = grupo.HasValue ? "<wp:Param>/GrupoPage.xaml?grupo=" + grupo.Value + "&amp;remetente=" + usuario.Nome + "&amp;mensagem="
+                                    + mensagem + "</wp:Param>" : "<wp:Param>/UsuarioPage.xaml?usuario=" + usuarioAlvo.Id + "&amp;mensagem="+ mensagem + "</wp:Param>";
+
                     string xmlMensagem =
                     "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
                     "<wp:Notification xmlns:wp=\"WPNotification\">" +
                         "<wp:Toast>" +
                             "<wp:Text1>" + $"@{usuario.Nome}" + "</wp:Text1>" +
                             "<wp:Text2>" + mensagem + "</wp:Text2>" +
-                            "<wp:Param>/UsuarioPage.xaml?usuario=" + usuarioAlvo.Id + "&mensagem="
-                                + mensagem + "</wp:Param>" +
+                            param +
                         "</wp:Toast>" +
                     "</wp:Notification>";
 
@@ -72,20 +76,20 @@ namespace MeNota.ServicoRest.Controllers
 
                     if (notificationStatus == "Received" && notificationChannelStatus == "Active" && deviceConnectionStatus == "Connected")
                     {
-                        Debug.WriteLine("[ME_NOTA] Mensagem enviada.");
+                        retorno = new { Mensagem = "Mensagem enviada.", Flag = true };
                     }
                     else
                     {
-                        Debug.WriteLine($"[ME_NOTA] @{usuarioAlvo.Nome} está desconectado.");
+                        retorno = new { Mensagem = $"@{usuarioAlvo.Nome} está desconectado.", Flag = false };
                     }
                 }
                 catch
                 {
-                    Debug.WriteLine("[ME_NOTA] Ocorreu um erro.");
+                    TempData["Resultado"] = "Ocorreu um erro.";
+                    retorno = new { Mensagem = "Ocorreu um erro.", Flag = false };
                 }
             }
-            return RedirectToAction("Index");
+            return Json(retorno, JsonRequestBehavior.AllowGet);
         }
-
     }
 }

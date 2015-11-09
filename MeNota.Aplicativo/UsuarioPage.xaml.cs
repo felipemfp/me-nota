@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -19,9 +20,11 @@ namespace MeNota.Aplicativo
 
         public UsuarioPage()
         {
-            
             InitializeComponent();
-            lblUsuario.Text = "@" + usuario.Nome;
+            if (usuario != null)
+            {
+                lblUsuario.Text = "@" + usuario.Nome;
+            }
         }
 
         private async Task<bool> RecuperarUsuarioAlvo(int id)
@@ -69,6 +72,10 @@ namespace MeNota.Aplicativo
         private async void btnEnviar_Click(object sender, RoutedEventArgs e)
         {
             var mensagem = txtMensagem.Text;
+            if (usuario == null)
+            {
+                NavigationService.Navigate(new Uri("/MainPage.xaml", UriKind.Relative));
+            }
             if (String.IsNullOrWhiteSpace(mensagem))
             {
                 MessageBox.Show("Digite uma mensagem...");
@@ -77,47 +84,18 @@ namespace MeNota.Aplicativo
             {
                 try
                 {
-                    string xmlMensagem =
-                    "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-                    "<wp:Notification xmlns:wp=\"WPNotification\">" +
-                        "<wp:Toast>" +
-                            "<wp:Text1>" + $"@{usuario.Nome}" + "</wp:Text1>" +
-                            "<wp:Text2>" + mensagem + "</wp:Text2>" +
-                            "<wp:Param>/UsuarioPage.xaml?usuario=" + usuarioAlvo.Id + "&mensagem="
-                                + mensagem + "</wp:Param>" +
-                        "</wp:Toast>" +
-                    "</wp:Notification>";
-
-                    byte[] msgBytes = Encoding.UTF8.GetBytes(xmlMensagem);
-
-                    string uri = usuarioAlvo.Url;
-                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
-                    request.Method = "POST";
-                    request.ContentType = "text/xml";
-                    request.ContentLength = xmlMensagem.Length;
-                    request.Headers["X-MessageID"] = Guid.NewGuid().ToString();
-                    request.Headers["X-WindowsPhone-Target"] = "toast";
-                    request.Headers["X-NotificationClass"] = "2";
-
-                    // Envia a requisição
-                    using (Stream requestStream = await request.GetRequestStreamAsync())
+                    HttpClient httpClient = Servico.Instanciar();
+                    var response = await httpClient.GetAsync($"notificacao/enviar?remetente={usuario.Id}&destinatario={usuarioAlvo.Id}&mensagem={mensagem}");
+                    var strJson = response.Content.ReadAsStringAsync().Result;
+                    dynamic retorno = JsonConvert.DeserializeObject(strJson);
+                    if (retorno["Flag"] == true)
                     {
-                        requestStream.Write(msgBytes, 0, msgBytes.Length);
-                    }
-
-                    HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
-                    string notificationStatus = response.Headers["X-NotificationStatus"];
-                    string notificationChannelStatus = response.Headers["X-SubscriptionStatus"];
-                    string deviceConnectionStatus = response.Headers["X-DeviceConnectionStatus"];
-
-                    if (notificationStatus == "Received" && notificationChannelStatus == "Active" && deviceConnectionStatus == "Connected")
-                    {
-                        MessageBox.Show("Mensagem enviada.");
+                        MessageBox.Show((string)retorno["Mensagem"]);
                         txtMensagem.Text = String.Empty;
                     }
                     else
                     {
-                        MessageBox.Show($"@{usuarioAlvo.Nome} está desconectado.");
+                        MessageBox.Show((string)retorno["Mensagem"]);
                     }
                 }
                 catch
