@@ -40,7 +40,7 @@ namespace MeNota.ServicoRest.Controllers
                 try
                 {
                     string param = grupo.HasValue ? "<wp:Param>/GrupoPage.xaml?grupo=" + grupo.Value + "&amp;remetente=" + usuario.Nome + "&amp;mensagem="
-                                    + mensagem + "</wp:Param>" : "<wp:Param>/UsuarioPage.xaml?usuario=" + usuarioAlvo.Id + "&amp;mensagem="+ mensagem + "</wp:Param>";
+                                    + mensagem + "</wp:Param>" : "<wp:Param>/UsuarioPage.xaml?usuario=" + usuario.Id + "&amp;mensagem="+ mensagem + "</wp:Param>";
 
                     string xmlMensagem =
                     "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +

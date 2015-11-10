@@ -75,7 +75,7 @@ namespace MeNota.Aplicativo
                     txtDescricao.Text = grupo.Descricao;
                     lblDescricao.Text = grupo.Descricao;
                     lbxUsuarios.ItemsSource = await RecuperarMembros();
-                    if (grupo.IdAdm == usuario.Id)
+                    if (usuario != null && grupo.IdAdm == usuario.Id)
                     {
                         lblAdministrador.Text = "@" + usuario.Nome;
                         lbxConfigUsuarios.ItemsSource = lbxUsuarios.ItemsSource;
@@ -210,6 +210,10 @@ namespace MeNota.Aplicativo
         private async void btnEnviar_Click(object sender, RoutedEventArgs e)
         {
             var mensagem = txtMensagem.Text;
+            if (usuario == null)
+            {
+                NavigationService.Navigate(new Uri("/MainPage.xaml", UriKind.Relative));
+            }
             if (String.IsNullOrWhiteSpace(mensagem))
             {
                 MessageBox.Show("Digite uma mensagem...");
