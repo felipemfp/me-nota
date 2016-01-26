@@ -1,4 +1,4 @@
-# Notificações - Lista 07
+# Me Nota - Sistema de Notificações
 
 **Instituição**: Instituto Federal do Rio Grande do Norte
 
